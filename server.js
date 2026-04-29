@@ -9,8 +9,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // MIDDLEWARE
+// MIDDLEWARE
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+
+// TEST ROUTE
+app.get("/", (req, res) => {
+    res.send("EICT Backend is running 🚀");
+});
 
 // DATABASE CONNECTION (IMPORTANT FIX)
 mongoose.connect(process.env.MONGO_URI)
