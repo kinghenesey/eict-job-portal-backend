@@ -16,17 +16,15 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("MongoDB Connected ✅");
-
-    // START SERVER ONLY AFTER DB CONNECTS
-    app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-    });
-
 })
 .catch((err) => {
     console.error("MongoDB Connection Failed ❌");
     console.error(err.message);
-    process.exit(1);
+});
+
+// START SERVER OUTSIDE
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 // CREATE APPLICATION
