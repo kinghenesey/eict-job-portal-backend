@@ -12,18 +12,21 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
-// DATABASE CONNECTION
+// DATABASE CONNECTION (IMPORTANT FIX)
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected ✅"))
+.then(() => {
+    console.log("MongoDB Connected ✅");
+
+    // START SERVER ONLY AFTER DB CONNECTS
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+
+})
 .catch((err) => {
     console.error("MongoDB Connection Failed ❌");
     console.error(err.message);
     process.exit(1);
-});
-
-// TEST ROUTE
-app.get("/", (req, res) => {
-    res.send("Server is running 🚀");
 });
 
 // CREATE APPLICATION
@@ -37,13 +40,14 @@ app.post("/apply", async (req, res) => {
     }
 });
 
-// GET ALL APPLICATIONS
+// GET ALL APPLICATIONS (ONLY ONCE)
 app.get("/applications", async (req, res) => {
     try {
         const data = await Application.find();
         res.json(data);
     } catch (err) {
-        res.status(500).send(err.message);
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -53,11 +57,7 @@ app.delete("/applications/:id", async (req, res) => {
         await Application.findByIdAndDelete(req.params.id);
         res.send("Deleted successfully 🗑️");
     } catch (err) {
-        res.status(500).send(err.message);
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
-});
-
-// START SERVER
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
 });
