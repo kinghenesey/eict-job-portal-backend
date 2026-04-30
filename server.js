@@ -79,3 +79,18 @@ app.put("/applications/:id", async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+
+const Team = require("./models/Team");
+
+// GET team
+app.get("/team", async (req, res) => {
+    const data = await Team.find();
+    res.json(data);
+});
+
+// ADD team member
+app.post("/team", async (req, res) => {
+    const newMember = new Team(req.body);
+    await newMember.save();
+    res.send("Team member added");
+});
