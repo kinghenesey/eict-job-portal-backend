@@ -10,6 +10,8 @@ const Team = require("./models/Team");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const Contact = require("./models/Contact");
+
 /* ===================== MIDDLEWARE ===================== */
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
@@ -123,4 +125,15 @@ app.post("/admin/login", (req, res) => {
         success: false,
         message: "Invalid credentials"
     });
+});
+
+app.post("/contact", async (req, res) => {
+    const msg = new Contact(req.body);
+    await msg.save();
+    res.send("Message saved");
+});
+
+app.get("/contact", async (req, res) => {
+    const data = await Contact.find();
+    res.json(data);
 });
