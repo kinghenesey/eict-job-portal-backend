@@ -111,29 +111,26 @@ app.post("/team", async (req, res) => {
 
 /* ===================== ADMIN LOGIN ===================== */
 
+const jwt = require("jsonwebtoken");
+
 app.post("/admin/login", (req, res) => {
     const { username, password } = req.body;
 
     if (username === "admin" && password === "12345") {
-        return res.json({
-            success: true,
-            token: "eict-admin-token"
-        });
+        const token = jwt.sign(
+            { role: "admin" },
+            process.env.JWT_SECRET,
+            { expiresIn: "2h" }
+        );
+
+        return res.json({ success: true, token });
     }
 
-    res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-    });
+    res.status(401).json({ success: false });
 });
 
 app.post("/contact", async (req, res) => {
     const msg = new Contact(req.body);
     await msg.save();
     res.send("Message saved");
-});
-
-app.get("/contact", async (req, res) => {
-    const data = await Contact.find();
-    res.json(data);
 });
