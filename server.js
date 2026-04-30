@@ -65,3 +65,17 @@ app.delete("/applications/:id", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+app.put("/applications/:id", async (req, res) => {
+    try {
+        const updated = await Application.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
+        res.json(updated);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
