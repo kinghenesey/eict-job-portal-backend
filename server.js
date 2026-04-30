@@ -3,35 +3,40 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+
 const Application = require("./models/Application");
+const Team = require("./models/Team");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MIDDLEWARE
-// MIDDLEWARE
+/* ===================== MIDDLEWARE ===================== */
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
-// TEST ROUTE
+/* ===================== TEST ROUTE ===================== */
 app.get("/", (req, res) => {
     res.send("EICT Backend is running 🚀");
 });
 
-// DATABASE CONNECTION (IMPORTANT FIX)
+/* ===================== DATABASE CONNECTION ===================== */
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("MongoDB Connected ✅");
+
+    // START SERVER ONLY AFTER DB IS READY
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+
 })
 .catch((err) => {
     console.error("MongoDB Connection Failed ❌");
     console.error(err.message);
+    process.exit(1);
 });
 
-// START SERVER OUTSIDE
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+/* ===================== APPLICATION ROUTES ===================== */
 
 // CREATE APPLICATION
 app.post("/apply", async (req, res) => {
@@ -44,13 +49,12 @@ app.post("/apply", async (req, res) => {
     }
 });
 
-// GET ALL APPLICATIONS (ONLY ONCE)
+// GET ALL APPLICATIONS
 app.get("/applications", async (req, res) => {
     try {
         const data = await Application.find();
         res.json(data);
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -61,11 +65,11 @@ app.delete("/applications/:id", async (req, res) => {
         await Application.findByIdAndDelete(req.params.id);
         res.send("Deleted successfully 🗑️");
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });
 
+// UPDATE APPLICATION
 app.put("/applications/:id", async (req, res) => {
     try {
         const updated = await Application.findByIdAndUpdate(
@@ -80,17 +84,43 @@ app.put("/applications/:id", async (req, res) => {
     }
 });
 
-const Team = require("./models/Team");
+/* ===================== TEAM ROUTES ===================== */
 
-// GET team
+// GET TEAM
 app.get("/team", async (req, res) => {
-    const data = await Team.find();
-    res.json(data);
+    try {
+        const data = await Team.find();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-// ADD team member
+// ADD TEAM MEMBER
 app.post("/team", async (req, res) => {
-    const newMember = new Team(req.body);
-    await newMember.save();
-    res.send("Team member added");
+    try {
+        const newMember = new Team(req.body);
+        await newMember.save();
+        res.send("Team member added");
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+/* ===================== ADMIN LOGIN ===================== */
+
+app.post("/admin/login", (req, res) => {
+    const { username, password } = req.body;
+
+    if (username === "admin" && password === "12345") {
+        return res.json({
+            success: true,
+            token: "eict-admin-token"
+        });
+    }
+
+    res.status(401).json({
+        success: false,
+        message: "Invalid credentials"
+    });
 });
