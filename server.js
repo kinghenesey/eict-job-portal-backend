@@ -144,7 +144,7 @@ app.post("/contact", async (req, res) => {
 app.post("/admin/login", (req, res) => {
     const { username, password } = req.body;
 
-    if (username === "admin" && password === "12345") {
+    if (username === "kinghenesey" && password === "king1225") {
         const token = jwt.sign(
             { role: "admin" },
             process.env.JWT_SECRET,
