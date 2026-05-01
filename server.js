@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
 
 const Application = require("./models/Application");
 const Team = require("./models/Team");
@@ -21,25 +20,6 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.send("EICT Backend is running 🚀");
 });
-
-/* ===================== AUTH MIDDLEWARE ===================== */
-function authMiddleware(req, res, next) {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-        return res.status(403).send("Access denied ❌ No token");
-    }
-
-    // Expecting: Bearer TOKEN
-    const token = authHeader.split(" ")[1];
-
-    try {
-        jwt.verify(token, process.env.JWT_SECRET);
-        next();
-    } catch (err) {
-        res.status(401).send("Invalid token ❌");
-    }
-}
 
 /* ===================== DATABASE CONNECTION ===================== */
 mongoose.connect(process.env.MONGO_URI)
@@ -71,7 +51,7 @@ app.post("/apply", async (req, res) => {
 });
 
 // GET APPLICATIONS (PROTECTED)
-app.get("/applications", authMiddleware, async (req, res) => {
+app.get("/applications", async (req, res) => {
     try {
         const data = await Application.find();
         res.json(data);
@@ -81,7 +61,7 @@ app.get("/applications", authMiddleware, async (req, res) => {
 });
 
 // DELETE APPLICATION (PROTECTED)
-app.delete("/applications/:id", authMiddleware, async (req, res) => {
+app.delete("/applications/:id", async (req, res) => {
     try {
         await Application.findByIdAndDelete(req.params.id);
         res.send("Deleted successfully 🗑️");
@@ -91,7 +71,7 @@ app.delete("/applications/:id", authMiddleware, async (req, res) => {
 });
 
 // UPDATE APPLICATION (PROTECTED)
-app.put("/applications/:id", authMiddleware, async (req, res) => {
+app.put("/applications/:id", async (req, res) => {
     try {
         const updated = await Application.findByIdAndUpdate(
             req.params.id,
@@ -117,7 +97,7 @@ app.get("/team", async (req, res) => {
 });
 
 // ADD TEAM MEMBER (PROTECTED)
-app.post("/team", authMiddleware, async (req, res) => {
+app.post("/team", async (req, res) => {
     try {
         const newMember = new Team(req.body);
         await newMember.save();
@@ -146,26 +126,19 @@ app.post("/admin/login", (req, res) => {
     const { username, password } = req.body;
 
     if (username === "kinghenesey" && password === "king1225") {
-        const token = jwt.sign(
-            { role: "admin" },
-            process.env.JWT_SECRET,
-            { expiresIn: "2h" }
-        );
-
         return res.json({
-            success: true,
-            token: token
+            success: true
         });
     }
 
     res.status(401).json({
         success: false,
-        message: "Invalid credentials ❌"
+        message: "Invalid credentials"
     });
 });
 
 // ADD THIS in server.js
-app.get("/contact", authMiddleware, async (req, res) => {
+app.get("/contact", async (req, res) => {
     const data = await Contact.find();
     res.json(data);
 });
