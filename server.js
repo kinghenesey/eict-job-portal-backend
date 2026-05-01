@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 5000;
 /* ===================== MIDDLEWARE ===================== */
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
+app.use(express.json());
 
 /* ===================== TEST ROUTE ===================== */
 app.get("/", (req, res) => {
