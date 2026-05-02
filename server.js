@@ -137,8 +137,22 @@ app.post("/admin/login", (req, res) => {
     });
 });
 
-// ADD THIS in server.js
+// GET ALL CONTACT MESSAGES
 app.get("/contact", async (req, res) => {
-    const data = await Contact.find();
-    res.json(data);
+    try {
+        const messages = await Contact.find().sort({ _id: -1 });
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE MESSAGE
+app.delete("/contact/:id", async (req, res) => {
+    try {
+        await Contact.findByIdAndDelete(req.params.id);
+        res.send("Message deleted");
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
